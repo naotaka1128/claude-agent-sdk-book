@@ -186,34 +186,41 @@ async def section_custom_tools():
 # Section 4: サブエージェント
 # =============================================
 async def section_subagents():
-    print("=== サブエージェント: 目的地調査を委譲 ===\n")
+    print("=== サブエージェント: コードベース調査を委譲 ===\n")
 
     from claude_agent_sdk import AgentDefinition
 
-    destination_expert = AgentDefinition(
-        description="旅行先の専門調査エージェント",
+    code_analyst = AgentDefinition(
+        description="コードベースの構成を分析するエージェント",
         prompt=(
-            "指定された目的地の気候・治安・交通事情・"
-            "おすすめスポットを調査し、"
+            "指定されたリポジトリのファイル構成・使用技術・"
+            "依存パッケージ・主要なコードパターンを調査し、"
             "簡潔に日本語で報告してください。"
         ),
         tools=["Read", "Glob", "Grep"],
     )
     prompt = (
-        "destination-expert サブエージェントを使って、"
-        "7月のローマの観光情報を調査してください。"
+        "code-analyst サブエージェントを使って、"
+        "このリポジトリの構成と使用技術を調査してください。"
     )
     options = ClaudeAgentOptions(
         model="sonnet",
         cwd=str(Path.cwd()),
         permission_mode="plan",
         allowed_tools=["Read", "Glob", "Grep", "Agent"],
+        disallowed_tools=["Bash"],
         max_turns=10,
-        agents={"destination-expert": destination_expert},
+        agents={"code-analyst": code_analyst},
     )
     async for msg in query(prompt=prompt, options=options):
-        if isinstance(msg, ResultMessage):
-            print(f"結果:\n{msg.result}")
+        if isinstance(msg, AssistantMessage):
+            for block in msg.content:
+                if isinstance(block, TextBlock):
+                    print(f"[assistant] {block.text[:200]}")
+                elif isinstance(block, ToolUseBlock):
+                    print(f"[tool_use] {block.name}: {str(block.input)[:100]}")
+        elif isinstance(msg, ResultMessage):
+            print(f"\n結果:\n{msg.result}")
 
 
 # =============================================
@@ -282,7 +289,7 @@ async def section_cost():
 # =============================================
 async def section_checkpoint():
     print("=== ファイルチェックポイント: 変更の巻き戻し ===\n")
-    print("（このセクションは実際にファイルを変更するため、/tmp で実行します）\n")
+    print("(このセクションは実際にファイルを変更するため、/tmp で実行します)\n")
 
     import tempfile
     import os
@@ -302,10 +309,10 @@ async def section_checkpoint():
             model="sonnet",
             cwd=tmpdir,
             permission_mode="acceptEdits",
-            allowed_tools=["Write", "Read"],
+            allowed_tools=["Write", "Edit", "Read"],
             enable_file_checkpointing=True,
             extra_args={"replay-user-messages": None},
-            max_turns=3,
+            max_turns=10,
         )
         async with ClaudeSDKClient(options=options) as client:
             await client.query(
@@ -318,24 +325,27 @@ async def section_checkpoint():
                     session_id = msg.session_id
                     print(f"\n変更後の内容: {open(test_file).read().strip()}")
 
-        # Step 2: 巻き戻し
+        # Step 2: 巻き戻し (resume + 空プロンプト → rewind_files)
         if checkpoint_id and session_id:
             print(f"\nチェックポイント: {checkpoint_id[:12]}...")
-            response = safe_input("巻き戻しますか？ (y/n): ").strip().lower()
+            response = safe_input("元に戻しますか? (y/n): ").strip().lower()
             if response == "y":
                 resume_options = ClaudeAgentOptions(
                     model="sonnet",
+                    cwd=tmpdir,
+                    permission_mode="acceptEdits",
+                    allowed_tools=["Write", "Edit", "Read"],
                     enable_file_checkpointing=True,
                     resume=session_id,
                 )
                 async with ClaudeSDKClient(
                     options=resume_options,
                 ) as client:
-                    await client.query("")  # 空プロンプトで接続
+                    await client.query("")  # 空プロンプトで再接続
                     async for msg in client.receive_response():
                         await client.rewind_files(checkpoint_id)
                         break
-                print(f"巻き戻し後の内容: {open(test_file).read().strip()}")
+                print(f"復元後の内容: {open(test_file).read().strip()}")
 
 
 # =============================================
