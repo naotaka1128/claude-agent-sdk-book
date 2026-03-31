@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+dist/
+build/
+.venv/
+
+# Environment
+.env
+
+# Node
+node_modules/
+scripts/chapter_05_chat_app/client/dist/
+
+# OS
+.DS_Store
