@@ -137,7 +137,7 @@ async def websocket_endpoint(ws: WebSocket):
                                 " SerpApi の search ツールを活用してください。"
                             ),
                         },
-                        mcp_servers=mcp_servers if mcp_servers else None,
+                        **({"mcp_servers": mcp_servers} if mcp_servers else {}),
                         include_partial_messages=True,
                         can_use_tool=can_use_tool,
                         permission_mode="acceptEdits",
