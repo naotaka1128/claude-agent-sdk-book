@@ -277,7 +277,7 @@ async def section_cost():
     ):
         if isinstance(msg, ResultMessage):
             print(f"結果: {msg.result}\n")
-            print(f"合計コスト: ${msg.total_cost_usd:.4f}")
+            print(f"合計コスト: ${msg.total_cost_usd or 0:.4f}")
             print(f"ターン数: {msg.num_turns}")
             print(f"サブタイプ: {msg.subtype}")
             if msg.usage:

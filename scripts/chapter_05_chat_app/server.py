@@ -215,7 +215,7 @@ async def websocket_endpoint(ws: WebSocket):
                             {
                                 "type": "result",
                                 "result": msg.result,
-                                "cost": msg.total_cost_usd,
+                                "cost": msg.total_cost_usd or 0,
                                 "turns": msg.num_turns,
                                 "sessionId": msg.session_id,
                             }

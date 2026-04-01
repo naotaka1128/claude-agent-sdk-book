@@ -142,7 +142,7 @@ async def main():
                     if isinstance(block, ToolUseBlock) and block.name == "TodoWrite":
                         display_todos(block.input)
             elif isinstance(msg, ResultMessage):
-                print(f"\n\n📊 ヒアリング完了 (コスト: ${msg.total_cost_usd:.4f})")
+                print(f"\n\n📊 ヒアリング完了 (コスト: ${msg.total_cost_usd or 0:.4f})")
                 plan = msg.result
 
         if not plan:
@@ -178,7 +178,9 @@ async def main():
                         if delta.get("type") == "text_delta":
                             print(delta["text"], end="", flush=True)
                 elif isinstance(msg, ResultMessage):
-                    print(f"\n\n📊 プラン修正完了 (コスト: ${msg.total_cost_usd:.4f})")
+                    print(
+                        f"\n\n📊 プラン修正完了 (コスト: ${msg.total_cost_usd or 0:.4f})"
+                    )
                     plan = msg.result
             if plan:
                 print("\n" + "=" * 50)
@@ -205,7 +207,7 @@ async def main():
                     if isinstance(block, ToolUseBlock) and block.name == "TodoWrite":
                         display_todos(block.input)
             elif isinstance(msg, ResultMessage):
-                print(f"\n\n✅ 旅程作成完了 (コスト: ${msg.total_cost_usd:.4f})")
+                print(f"\n\n✅ 旅程作成完了 (コスト: ${msg.total_cost_usd or 0:.4f})")
 
     print("\n🎉 すべて完了しました！")
 

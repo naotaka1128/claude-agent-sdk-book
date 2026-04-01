@@ -96,7 +96,7 @@ async def step3_all_messages():
 
         elif isinstance(message, ResultMessage):
             print(f"\n[result] session_id: {message.session_id}")
-            print(f"[result] コスト: ${message.total_cost_usd:.4f}")
+            print(f"[result] コスト: ${message.total_cost_usd or 0:.4f}")
             print(f"[result] 最終結果:\n{message.result}")
 
 

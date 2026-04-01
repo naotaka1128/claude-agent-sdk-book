@@ -142,7 +142,7 @@ async def main():
 
             elif isinstance(msg, ResultMessage):
                 print("\n\n--- 完了 ---")
-                print(f"コスト: ${msg.total_cost_usd:.4f}")
+                print(f"コスト: ${msg.total_cost_usd or 0:.4f}")
                 print(f"ターン数: {msg.num_turns}")
 
 
